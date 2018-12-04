@@ -107,13 +107,13 @@ class LogstashFormatter(object):
         logr = self.defaults.copy()
 
         logr.update(
-                {'message'    : msg,
-                 'level'      : level_name,
-                 'logger'     : logger,
-                 '@timestamp' : timestamp,
-                 'source_host': self.source_host,
-                 'context'    : self._build_fields(logr, fields)
-                 }
+            {'message'    : msg,
+             'level'      : level_name,
+             'logger'     : logger,
+             '@timestamp' : timestamp,
+             'source_host': self.source_host,
+             'context'    : self._build_fields(logr, fields)
+             }
         )
 
         if self.release:

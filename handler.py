@@ -13,8 +13,7 @@ from .formatter import LogstashFormatter
 # OSError includes ConnectionError, ConnectionError includes ConnectionResetError
 NETWORK_ERRORS = OSError
 STR_SENDING_ERR = "Network error when sending logs to Logstash, try re-establish connection"
-STR_REESTABLISH_ERR = "Network error when re-establishing socket, message queued for next flush"
-ERR_STRINGS = (STR_SENDING_ERR, STR_REESTABLISH_ERR)
+ERR_STRINGS = (STR_SENDING_ERR,)
 
 
 class LogstashHandler(Handler):
@@ -98,7 +97,6 @@ class LogstashHandler(Handler):
                     self.cli_sock.sendall((item + '\n').encode("utf8"))
                 except NETWORK_ERRORS:
                     # got network error when trying to reconnect, put the item back to queue and exit
-                    self.logger.error("Network error when re-establishing socket, message queued for next flush")
                     self.queue.appendleft(item)
 
     def disable_buffering(self):

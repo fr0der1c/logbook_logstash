@@ -4,7 +4,6 @@ uses a lot of code from logbook.queues.RedisHandler
 import collections
 import socket
 import threading
-import json
 
 from logbook import Handler, NOTSET
 
@@ -84,10 +83,6 @@ class LogstashHandler(Handler):
         while len(self.queue) > 0:
             item = self.queue.popleft()
 
-            # ignore logs produced by logbook_logstash itself
-            if json.loads(item)['message'] in ERR_STRINGS:
-                continue
-
             try:
                 self.cli_sock.sendall((item + '\n').encode("utf8"))
             except NETWORK_ERRORS:
@@ -114,6 +109,8 @@ class LogstashHandler(Handler):
         new items are added, a corresponding number of items are discarded from the opposite end. This is not what
         we want.
         """
+        if record.message in ERR_STRINGS:
+            return
         if len(self.queue) < self.queue.maxlen:
             self.queue.append(self.format(record))
         #    if len(self.queue) == self.flush_threshold:

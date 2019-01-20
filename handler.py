@@ -33,7 +33,7 @@ class LogstashHandler(Handler):
                  filter=lambda r, h: r.level >= 11,
                  bubble=True,
                  flush_time=5,
-                 queue_max_len=1000,
+                 queue_max_len=500,
                  logger=None,
                  release=None):
         Handler.__init__(self, level, filter, bubble)
@@ -92,7 +92,8 @@ class LogstashHandler(Handler):
                     self.cli_sock.sendall((item + '\n').encode("utf8"))
                 except NETWORK_ERRORS:
                     # got network error when trying to reconnect, put the item back to queue and exit
-                    self.queue.appendleft(item)
+                    if len(self.queue) < self.queue.maxlen:
+                        self.queue.appendleft(item)
 
     def disable_buffering(self):
         """Disables buffering.

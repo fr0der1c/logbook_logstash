@@ -4,6 +4,7 @@ uses a lot of code from logbook.queues.RedisHandler
 import collections
 import socket
 import threading
+import json
 
 from logbook import Handler, NOTSET
 
@@ -11,6 +12,9 @@ from .formatter import LogstashFormatter
 
 # OSError includes ConnectionError, ConnectionError includes ConnectionResetError
 NETWORK_ERRORS = OSError
+STR_SENDING_ERR = "Network error when sending logs to Logstash, try re-establish connection"
+STR_REESTABLISH_ERR = "Network error when re-establishing socket, message queued for next flush"
+ERR_STRINGS = (STR_SENDING_ERR, STR_REESTABLISH_ERR)
 
 
 class LogstashHandler(Handler):
@@ -80,6 +84,11 @@ class LogstashHandler(Handler):
         #    '[Flush task] {} flushing buffer, q length: {}'.format(threading.currentThread().name, len(self.queue)))
         while len(self.queue) > 0:
             item = self.queue.popleft()
+
+            # ignore logs produced by logbook_logstash itself
+            if json.loads(item)['message'] in ERR_STRINGS:
+                continue
+
             try:
                 self.cli_sock.sendall((item + '\n').encode("utf8"))
             except NETWORK_ERRORS:

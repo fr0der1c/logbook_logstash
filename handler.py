@@ -87,13 +87,14 @@ class LogstashHandler(Handler):
                 self.cli_sock.sendall((item + '\n').encode("utf8"))
             except NETWORK_ERRORS:
                 try:
-                    self.logger.warn("Network error when sending logs to Logstash, try re-establish connection")
+                    self.logger.warn(STR_SENDING_ERR)
                     self._establish_socket()
                     self.cli_sock.sendall((item + '\n').encode("utf8"))
                 except NETWORK_ERRORS:
                     # got network error when trying to reconnect, put the item back to queue and exit
                     if len(self.queue) < self.queue.maxlen:
                         self.queue.appendleft(item)
+                    break
 
     def disable_buffering(self):
         """Disables buffering.
